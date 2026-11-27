@@ -83,3 +83,70 @@ function exigerConnexion(): void
     }
 }
 
+/**
+ * Libellés autorisés pour le statut d'une tâche.
+ *
+ * @return array<string, string>
+ */
+function libellesStatuts(): array
+{
+    return [
+        "a_faire"  => "À faire",
+        "en_cours" => "En cours",
+        "terminee" => "Terminée",
+    ];
+}
+
+/**
+ * Libellés autorisés pour la priorité d'une tâche.
+ *
+ * @return array<string, string>
+ */
+function libellesPriorites(): array
+{
+    return [
+        "basse"   => "Basse",
+        "normale" => "Normale",
+        "haute"   => "Haute",
+    ];
+}
+
+/**
+ * Renvoie le libellé d'un statut, ou "Inconnu" si non reconnu.
+ */
+function libelleStatut(string $statut): string
+{
+    return libellesStatuts()[$statut] ?? "Inconnu";
+}
+
+/**
+ * Renvoie le libellé d'une priorité, ou "Inconnue" si non reconnue.
+ */
+function libellePriorite(string $priorite): string
+{
+    return libellesPriorites()[$priorite] ?? "Inconnue";
+}
+
+/**
+ * Renvoie la classe CSS du badge associé à un statut.
+ */
+function classeStatut(string $statut): string
+{
+    return match ($statut) {
+        "terminee" => "badge badge-vert",
+        "en_cours" => "badge badge-bleu",
+        default    => "badge badge-gris",
+    };
+}
+
+/**
+ * Renvoie la classe CSS du badge associé à une priorité.
+ */
+function classePriorite(string $priorite): string
+{
+    return match ($priorite) {
+        "haute"   => "badge badge-rouge",
+        "normale" => "badge badge-ambre",
+        default   => "badge badge-gris",
+    };
+}

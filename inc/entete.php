@@ -17,6 +17,7 @@ $messagesFlash = consommerMessages();
     <nav class="menu">
         <a href="index.php" class="<?= $pageActive === "index.php" ? "actif" : "" ?>">Accueil</a>
         <?php if (estConnecte()): ?>
+            <a href="mes-listes.php" class="<?= $pageActive === "mes-listes.php" ? "actif" : "" ?>">Mes listes</a>
             <span class="utilisateur-badge"><?= e(utilisateurConnecteNom()) ?></span>
             <form method="post" action="deconnexion.php" class="form-inline">
                 <button type="submit" class="bouton bouton-leger">Déconnexion</button>

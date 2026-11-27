@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-$dsn = "mysql:host=localhost;dbname=todolist_app;charset=utf8mb4";
+$dsn = "mysql:host=localhost;dbname=todolist;charset=utf8mb4";
 $utilisateurBdd = "root";
 $motDePasseBdd = "";
 
