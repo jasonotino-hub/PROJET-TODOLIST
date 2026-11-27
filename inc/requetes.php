@@ -138,3 +138,171 @@ function recupererTachesDeListe(PDO $pdo, int $listeId): array
 
     return $stmt->fetchAll();
 }
+/**
+ * Crée une liste pour l'utilisateur connecté et renvoie son identifiant.
+ */
+function creerListe(PDO $pdo, int $utilisateurId, string $nom): int
+{
+    $sql = "INSERT INTO liste (nom, utilisateur_id)
+            VALUES (:nom, :utilisateur_id)";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([
+        ":nom"            => $nom,
+        ":utilisateur_id" => $utilisateurId,
+    ]);
+
+    return (int) $pdo->lastInsertId();
+}
+
+/**
+ * Renomme une liste uniquement si elle appartient à l'utilisateur connecté.
+ * Renvoie true si une ligne a été modifiée, false sinon.
+ */
+function renommerListe(PDO $pdo, int $listeId, int $utilisateurId, string $nom): bool
+{
+    $sql = "UPDATE liste
+            SET nom = :nom
+            WHERE id = :id
+              AND utilisateur_id = :utilisateur_id";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([
+        ":nom"            => $nom,
+        ":id"             => $listeId,
+        ":utilisateur_id" => $utilisateurId,
+    ]);
+
+    return $stmt->rowCount() > 0;
+}
+
+/**
+ * Supprime une liste uniquement si elle appartient à l'utilisateur connecté.
+ * Les tâches liées sont supprimées automatiquement par ON DELETE CASCADE.
+ * Renvoie true si une ligne a été supprimée, false sinon.
+ */
+function supprimerListe(PDO $pdo, int $listeId, int $utilisateurId): bool
+{
+    $sql = "DELETE FROM liste
+            WHERE id = :id
+              AND utilisateur_id = :utilisateur_id";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([
+        ":id"             => $listeId,
+        ":utilisateur_id" => $utilisateurId,
+    ]);
+
+    return $stmt->rowCount() > 0;
+}
+
+/**
+ * Récupère une tâche uniquement si elle appartient à une liste détenue par l'utilisateur connecté.
+ * Renvoie un tableau associatif ou null si introuvable / non autorisée.
+ *
+ * @return array{
+ *     id: int,
+ *     liste_id: int,
+ *     titre: string,
+ *     description: string|null,
+ *     priorite: string,
+ *     statut: string,
+ *     echeance: string|null,
+ *     date_creation: string
+ * }|null
+ */
+function trouverTachePourUtilisateur(PDO $pdo, int $tacheId, int $utilisateurId): ?array
+{
+    $sql = "SELECT
+                t.id,
+                t.liste_id,
+                t.titre,
+                t.description,
+                t.priorite,
+                t.statut,
+                t.echeance,
+                t.date_creation
+            FROM tache t
+            INNER JOIN liste l ON l.id = t.liste_id
+            WHERE t.id = :tache_id
+              AND l.utilisateur_id = :utilisateur_id
+            LIMIT 1";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([
+        ":tache_id"       => $tacheId,
+        ":utilisateur_id" => $utilisateurId,
+    ]);
+
+    $tache = $stmt->fetch();
+    return $tache === false ? null : $tache;
+}
+
+/**
+ * Ajoute une tâche dans une liste et renvoie son identifiant.
+ */
+function ajouterTache(
+    PDO $pdo,
+    int $listeId,
+    string $titre,
+    ?string $description,
+    string $priorite,
+    string $statut,
+    ?string $echeance
+): int {
+    $sql = "INSERT INTO tache (liste_id, titre, description, priorite, statut, echeance)
+            VALUES (:liste_id, :titre, :description, :priorite, :statut, :echeance)";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([
+        ":liste_id"    => $listeId,
+        ":titre"       => $titre,
+        ":description" => $description,
+        ":priorite"    => $priorite,
+        ":statut"      => $statut,
+        ":echeance"    => $echeance,
+    ]);
+
+    return (int) $pdo->lastInsertId();
+}
+
+/**
+ * Met à jour le statut d'une tâche uniquement si sa liste appartient à l'utilisateur connecté.
+ */
+function changerStatutTache(PDO $pdo, int $tacheId, int $utilisateurId, string $statut): bool
+{
+    $sql = "UPDATE tache t
+            INNER JOIN liste l ON l.id = t.liste_id
+            SET t.statut = :statut
+            WHERE t.id = :tache_id
+              AND l.utilisateur_id = :utilisateur_id";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([
+        ":statut"         => $statut,
+        ":tache_id"       => $tacheId,
+        ":utilisateur_id" => $utilisateurId,
+    ]);
+
+    return $stmt->rowCount() > 0;
+}
+
+/**
+ * Supprime une tâche uniquement si sa liste appartient à l'utilisateur connecté.
+ */
+function supprimerTache(PDO $pdo, int $tacheId, int $utilisateurId): bool
+{
+    $sql = "DELETE t
+            FROM tache t
+            INNER JOIN liste l ON l.id = t.liste_id
+            WHERE t.id = :tache_id
+              AND l.utilisateur_id = :utilisateur_id";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([
+        ":tache_id"       => $tacheId,
+        ":utilisateur_id" => $utilisateurId,
+    ]);
+
+    return $stmt->rowCount() > 0;
+}

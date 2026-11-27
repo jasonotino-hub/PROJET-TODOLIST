@@ -10,7 +10,6 @@ $pageActive = "mes-listes.php";
 $utilisateurId = utilisateurConnecteId();
 $listes = recupererListesUtilisateur($pdo, $utilisateurId);
 
-// Préparation des données d'affichage (pourcentage arrondi)
 $listesAffichage = [];
 foreach ($listes as $liste) {
     $nbTaches = (int) $liste["nb_taches"];
@@ -31,6 +30,14 @@ require __DIR__ . "/inc/entete.php";
 
 <h1>Mes listes</h1>
 
+<form method="post" action="liste-creer.php" class="formulaire formulaire-ligne">
+    <label class="champ-croissant">
+        Nouvelle liste
+        <input type="text" name="nom" placeholder="Ex. Révisions, Courses..." maxlength="100" required>
+    </label>
+    <button type="submit" class="bouton">Créer la liste</button>
+</form>
+
 <?php if (count($listesAffichage) === 0): ?>
     <p class="vide">Vous n'avez pas encore de liste.</p>
 <?php else: ?>
@@ -48,6 +55,14 @@ require __DIR__ . "/inc/entete.php";
                 <p class="progression">
                     Avancement : <strong><?= $liste["pourcentage"] ?> %</strong>
                 </p>
+                <div class="carte-actions">
+                    <a href="liste.php?id=<?= $liste["id"] ?>" class="bouton bouton-secondaire bouton-petit">Ouvrir</a>
+                    <form method="post" action="liste-supprimer.php" class="form-inline"
+                          onsubmit="return confirm('Supprimer cette liste et toutes ses tâches ?');">
+                        <input type="hidden" name="liste_id" value="<?= $liste["id"] ?>">
+                        <button type="submit" class="bouton bouton-danger bouton-petit">Supprimer</button>
+                    </form>
+                </div>
             </article>
         <?php endforeach; ?>
     </div>
